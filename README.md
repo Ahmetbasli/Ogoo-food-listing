@@ -8,5 +8,5 @@ In the project directory, you can run:
 ### `yarn start`
 
 
-<img width="300px"   src="./gif.gif" title="gif"/>
+<img width="768px"   src="./gif.gif" title="gif"/>
 
