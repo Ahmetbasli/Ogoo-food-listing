@@ -4,48 +4,46 @@ import Data from "./data.json";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Dropdown, Row, Col, Container, ListGroup } from "react-bootstrap";
 
-function FoodTable() {
-  const GroupItemsByDate = (items) => {
-    let listOfGroupedItemsByDate = [];
+const GroupItemsByDate = (items) => {
+  let listOfGroupedItemsByDate = [];
 
-    items.forEach((item) => {
-      let isItemPushedToList = false;
-      if (listOfGroupedItemsByDate.length === 0) {
-        listOfGroupedItemsByDate.push({
-          date: item.fields.ItemStartDate,
-          itemsByDate: [item.fields],
-        });
+  items.forEach((item) => {
+    let isItemPushedToList = false;
+    if (listOfGroupedItemsByDate.length === 0) {
+      listOfGroupedItemsByDate.push({
+        date: item.fields.ItemStartDate,
+        itemsByDate: [item.fields],
+      });
+      isItemPushedToList = true;
+    }
+
+    listOfGroupedItemsByDate.forEach((itemOfGrouped) => {
+      if (
+        itemOfGrouped.date === item.fields.ItemStartDate &&
+        !isItemPushedToList
+      ) {
+        itemOfGrouped.itemsByDate.push(item.fields);
         isItemPushedToList = true;
       }
-
-      listOfGroupedItemsByDate.forEach((itemOfGrouped) => {
-        if (
-          itemOfGrouped.date === item.fields.ItemStartDate &&
-          !isItemPushedToList
-        ) {
-          itemOfGrouped.itemsByDate.push(item.fields);
-          isItemPushedToList = true;
-        }
-      });
-
-      if (!isItemPushedToList) {
-        listOfGroupedItemsByDate.push({
-          date: item.fields.ItemStartDate,
-          itemsByDate: [item.fields],
-        });
-      }
     });
-    return listOfGroupedItemsByDate;
-  };
-  const listOfGroupedItemsByDate = GroupItemsByDate(Data.value);
 
+    if (!isItemPushedToList) {
+      listOfGroupedItemsByDate.push({
+        date: item.fields.ItemStartDate,
+        itemsByDate: [item.fields],
+      });
+    }
+  });
+  return listOfGroupedItemsByDate;
+};
+const listOfGroupedItemsByDate = GroupItemsByDate(Data.value);
+
+function FoodTable() {
   const [itemsOfSelectedDate, setitemsOfSelectedDate] = React.useState(
     listOfGroupedItemsByDate[0]
   );
 
-  console.log(listOfGroupedItemsByDate);
-
-  const categorizeMenu = (list) => {
+  const categorizeForMenu = (list) => {
     let listOfGroupedItemsByCategory = [];
     list.itemsByDate.forEach((item) => {
       let isItemPushedToList = false;
@@ -74,6 +72,8 @@ function FoodTable() {
         });
       }
     });
+    //list in alphabetical order
+
     listOfGroupedItemsByCategory = listOfGroupedItemsByCategory.sort(function (
       a,
       b
@@ -86,9 +86,11 @@ function FoodTable() {
       }
       return 0;
     });
+
     return listOfGroupedItemsByCategory;
   };
-  const listOfGroupedItemsByCategory = categorizeMenu(itemsOfSelectedDate);
+
+  const listOfGroupedItemsByCategory = categorizeForMenu(itemsOfSelectedDate);
 
   const prepareDropdownDate = (garbageLookingDate) => {
     let dateForDropdown = garbageLookingDate.split("-");
@@ -109,13 +111,13 @@ function FoodTable() {
 
   return (
     <div>
-      <Container fluid>
-        <Row className="px-3">
-          <Col xs={12} md={4}>
+      <Container>
+        <Row className="px-0">
+          <Col xs={6} md={3}>
             <Dropdown>
               <div>
                 <Dropdown.Toggle
-                  className="dropDown"
+                  className="dropDown mb-2"
                   variant="border  border-dark outline-light"
                 >
                   {dateForDropdown}
@@ -134,13 +136,13 @@ function FoodTable() {
               </Dropdown.Menu>
             </Dropdown>
           </Col>
-          <Col xs={12} md={8}>
+          <Col xs={12} md={9}>
             <Row>
               {listOfGroupedItemsByCategory.map((item) => (
                 <Col
-                  md={12}
                   className="px-0 my-0"
                   xs={12}
+                  lg={4}
                   md={6}
                   key={item.category}
                 >

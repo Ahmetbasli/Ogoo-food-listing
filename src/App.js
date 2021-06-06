@@ -6,7 +6,7 @@ import FoodTable from "./FoodTable.js";
 function App() {
   return (
     <div className="App">
-      <h1>Wellcome to Ogoo 😉</h1>
+      <h1>Welcome to Ogoo 😉</h1>
       <FoodTable />
     </div>
   );
