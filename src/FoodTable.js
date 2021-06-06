@@ -1,6 +1,6 @@
 import React from "react";
 import "./FoodTable.css";
-import Data from "./data.json";
+import Data from "./Data/data.json";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Dropdown, Row, Col, Container, ListGroup } from "react-bootstrap";
 
