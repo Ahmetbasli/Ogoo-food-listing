@@ -39,10 +39,6 @@ const GroupItemsByDate = (items) => {
 const listOfGroupedItemsByDate = GroupItemsByDate(Data.value);
 
 function FoodTable() {
-  const [itemsOfSelectedDate, setitemsOfSelectedDate] = React.useState(
-    listOfGroupedItemsByDate[0]
-  );
-
   const categorizeForMenu = (list) => {
     let listOfGroupedItemsByCategory = [];
     list.itemsByDate.forEach((item) => {
@@ -72,8 +68,8 @@ function FoodTable() {
         });
       }
     });
-    //list in alphabetical order
 
+    //list in alphabetical order
     listOfGroupedItemsByCategory = listOfGroupedItemsByCategory.sort(function (
       a,
       b
@@ -89,6 +85,10 @@ function FoodTable() {
 
     return listOfGroupedItemsByCategory;
   };
+
+  const [itemsOfSelectedDate, setitemsOfSelectedDate] = React.useState(
+    listOfGroupedItemsByDate[0]
+  );
 
   const listOfGroupedItemsByCategory = categorizeForMenu(itemsOfSelectedDate);
 
