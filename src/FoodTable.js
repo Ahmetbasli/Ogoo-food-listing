@@ -1,47 +1,58 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./FoodTable.css";
-import Data from "./Data/data.json";
+
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Dropdown, Row, Col, Container, ListGroup } from "react-bootstrap";
-
-const GroupItemsByDate = (items) => {
-  let listOfGroupedItemsByDate = [];
-
-  items.forEach((item) => {
-    let isItemPushedToList = false;
-    if (listOfGroupedItemsByDate.length === 0) {
-      listOfGroupedItemsByDate.push({
-        date: item.fields.ItemStartDate,
-        itemsByDate: [item.fields],
-      });
-      isItemPushedToList = true;
-    }
-
-    listOfGroupedItemsByDate.forEach((itemOfGrouped) => {
-      if (
-        itemOfGrouped.date === item.fields.ItemStartDate &&
-        !isItemPushedToList
-      ) {
-        itemOfGrouped.itemsByDate.push(item.fields);
-        isItemPushedToList = true;
-      }
-    });
-
-    if (!isItemPushedToList) {
-      listOfGroupedItemsByDate.push({
-        date: item.fields.ItemStartDate,
-        itemsByDate: [item.fields],
-      });
-    }
-  });
-  return listOfGroupedItemsByDate;
-};
-const listOfGroupedItemsByDate = GroupItemsByDate(Data.value);
+import axios from "axios";
 
 function FoodTable() {
-  const [itemsOfSelectedDate, setitemsOfSelectedDate] = React.useState(
-    listOfGroupedItemsByDate[0]
-  );
+  const [rawItems, setRawItems] = useState([]);
+  const [itemsOfSelectedDate, setitemsOfSelectedDate] = useState("");
+
+  const fetchData = async () => {
+    const response = await axios.get("data.json").catch((err) => {
+      console.log(err);
+    });
+    const items = response.data.value;
+    setRawItems(items);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const GroupItemsByDate = (items) => {
+    let listOfGroupedItemsByDate = [];
+
+    items.forEach((item) => {
+      let isItemPushedToList = false;
+      if (listOfGroupedItemsByDate.length === 0) {
+        listOfGroupedItemsByDate.push({
+          date: item.fields.ItemStartDate,
+          itemsByDate: [item.fields],
+        });
+        isItemPushedToList = true;
+      }
+
+      listOfGroupedItemsByDate.forEach((itemOfGrouped) => {
+        if (
+          itemOfGrouped.date === item.fields.ItemStartDate &&
+          !isItemPushedToList
+        ) {
+          itemOfGrouped.itemsByDate.push(item.fields);
+          isItemPushedToList = true;
+        }
+      });
+
+      if (!isItemPushedToList) {
+        listOfGroupedItemsByDate.push({
+          date: item.fields.ItemStartDate,
+          itemsByDate: [item.fields],
+        });
+      }
+    });
+    return listOfGroupedItemsByDate;
+  };
 
   const categorizeForMenu = (list) => {
     let listOfGroupedItemsByCategory = [];
@@ -74,25 +85,25 @@ function FoodTable() {
     });
 
     //list in alphabetical order
-    listOfGroupedItemsByCategory = listOfGroupedItemsByCategory.sort(function (
-      a,
-      b
-    ) {
-      if (a.category < b.category) {
-        return -1;
-      }
-      if (a.category > b.category) {
-        return 1;
-      }
-      return 0;
+    listOfGroupedItemsByCategory.sort(function (a, b) {
+      return a.category.localeCompare(b.category);
     });
 
     return listOfGroupedItemsByCategory;
   };
 
-  const listOfGroupedItemsByCategory = categorizeForMenu(itemsOfSelectedDate);
+  const listOfGroupedItemsByDate = GroupItemsByDate(rawItems);
 
-  const prepareDropdownDate = (garbageLookingDate) => {
+  const listOfGroupedItemsByCategory =
+    rawItems.length === 0
+      ? ""
+      : categorizeForMenu(
+          !itemsOfSelectedDate
+            ? listOfGroupedItemsByDate[0]
+            : itemsOfSelectedDate
+        );
+
+  const prepareNiceLookingDropdownDate = (garbageLookingDate) => {
     let dateForDropdown = garbageLookingDate.split("-");
     dateForDropdown = [
       dateForDropdown[0],
@@ -103,7 +114,6 @@ function FoodTable() {
       .join(".");
     return dateForDropdown;
   };
-  const dateForDropdown = prepareDropdownDate(listOfGroupedItemsByDate[0].date);
 
   const handleSelect = (e) => {
     setitemsOfSelectedDate(e);
@@ -111,69 +121,75 @@ function FoodTable() {
 
   return (
     <div>
-      <Container>
-        <Row className="px-0">
-          <Col xs={6} md={3}>
-            <Dropdown>
-              <div>
-                <Dropdown.Toggle
-                  className="dropDown mb-2"
-                  variant="border  border-dark outline-light"
-                >
-                  {dateForDropdown}
-                </Dropdown.Toggle>
-              </div>
-
-              <Dropdown.Menu className="dropDownMenu">
-                {listOfGroupedItemsByDate.map((item) => (
-                  <Dropdown.Item
-                    onSelect={() => handleSelect(item)}
-                    key={item.date}
+      {rawItems.length !== 0 && (
+        <Container>
+          <Row className="px-0">
+            <Col xs={6} md={3}>
+              <Dropdown>
+                <div>
+                  <Dropdown.Toggle
+                    className="dropDown mb-2"
+                    variant="border  border-dark outline-light"
                   >
-                    {prepareDropdownDate(item.date)}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </Col>
-          <Col xs={12} md={9}>
-            <Row>
-              {listOfGroupedItemsByCategory.map((item) => (
-                <Col
-                  className="px-0 my-0"
-                  xs={12}
-                  lg={4}
-                  md={6}
-                  key={item.category}
-                >
-                  <ListGroup
-                    md={12}
-                    className="items"
+                    {prepareNiceLookingDropdownDate(
+                      !itemsOfSelectedDate
+                        ? listOfGroupedItemsByDate[0].date
+                        : itemsOfSelectedDate.date
+                    )}
+                  </Dropdown.Toggle>
+                </div>
+
+                <Dropdown.Menu className="dropDownMenu">
+                  {listOfGroupedItemsByDate.map((item) => (
+                    <Dropdown.Item
+                      onSelect={() => handleSelect(item)}
+                      key={item.date}
+                    >
+                      {prepareNiceLookingDropdownDate(item.date)}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
+            </Col>
+            <Col xs={12} md={9}>
+              <Row>
+                {listOfGroupedItemsByCategory.map((item) => (
+                  <Col
+                    className="px-0 my-0"
+                    xs={12}
+                    lg={4}
+                    md={6}
                     key={item.category}
-                    variant="flush"
                   >
-                    <ListGroup.Item variant="dark">
-                      <div className="header">
-                        <h2>{item.category}</h2>
-                        <h3>Kcal</h3>
-                      </div>
-                    </ListGroup.Item>
-
-                    {item.itemsByCategory.map((itemOfCategory) => (
-                      <ListGroup.Item key={itemOfCategory.id}>
-                        <div className="detail">
-                          <h2>{itemOfCategory.Title} </h2>
-                          <h3>{itemOfCategory.Calorie}</h3>
+                    <ListGroup
+                      md={12}
+                      className="items"
+                      key={item.category}
+                      variant="flush"
+                    >
+                      <ListGroup.Item variant="dark">
+                        <div className="header">
+                          <h2>{item.category}</h2>
+                          <h3>Kcal</h3>
                         </div>
                       </ListGroup.Item>
-                    ))}
-                  </ListGroup>
-                </Col>
-              ))}
-            </Row>
-          </Col>
-        </Row>
-      </Container>
+
+                      {item.itemsByCategory.map((itemOfCategory) => (
+                        <ListGroup.Item key={itemOfCategory.id}>
+                          <div className="detail">
+                            <h2>{itemOfCategory.Title} </h2>
+                            <h3>{itemOfCategory.Calorie}</h3>
+                          </div>
+                        </ListGroup.Item>
+                      ))}
+                    </ListGroup>
+                  </Col>
+                ))}
+              </Row>
+            </Col>
+          </Row>
+        </Container>
+      )}
     </div>
   );
 }
