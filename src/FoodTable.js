@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "./FoodTable.css";
-
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Dropdown, Row, Col, Container, ListGroup } from "react-bootstrap";
 import axios from "axios";
